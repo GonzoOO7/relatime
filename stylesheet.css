@@ -1,0 +1,52 @@
+/* relatime panel clock */
+
+/* --- the one knob ------------------------------------------------------- */
+/* Clock size, in em relative to the shell's panel font (about 11pt here, so
+ * 1.0 is the stock size). Change this and run ./scripts/reload.sh to see it.
+ * Going much past ~1.4 starts to crowd the panel's fixed height. */
+.relatime-display {
+    font-size: 1.3em;
+    font-weight: 700;
+    /* Tabular figures so the label does not jitter in width as minutes tick. */
+    font-feature-settings: "tnum";
+}
+
+/* Black text on a coloured chip. Every contrast pair below clears 4:1, which
+ * is the threshold for the large bold text this is at 1.3em. */
+.relatime-part {
+    color: #000000;
+    padding: 1px 5px;
+    border-radius: 5px;
+}
+
+/* The hour chip. */
+.relatime-hour {
+    background-color: #d8be3c;   /* yellow */
+}
+
+/* 22:00 - 05:00: the hour chip turns cool blue. Two classes beat one. */
+.relatime-hour.relatime-night {
+    background-color: #3d8bbd;   /* blue */
+}
+
+/* The colon is deliberately left alone: no chip, and it keeps the panel's own
+ * foreground so it reads as ordinary panel text rather than part of the clock.
+ * Must come after .relatime-part, which has equal specificity. */
+.relatime-colon {
+    color: inherit;
+    background-color: transparent;
+    padding: 0 2px;
+    border-radius: 0;
+}
+
+/* The minutes chip takes its background from the ramp in src/relatime.js,
+ * applied per tick via set_style(). White means exactly on the hour. */
+
+.relatime-tooltip {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 5px 9px;
+    font-size: 0.9em;
+}

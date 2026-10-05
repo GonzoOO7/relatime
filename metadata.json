@@ -1,0 +1,8 @@
+{
+  "uuid": "relatime@home",
+  "name": "Relatime",
+  "description": "Panel clock in relative-hour notation: 08:50 shows as 9:-10. Replaces the built-in clock; its calendar popup is not available.",
+  "shell-version": ["50"],
+  "session-modes": ["user"],
+  "version": 1
+}

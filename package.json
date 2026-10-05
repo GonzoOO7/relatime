@@ -1,0 +1,10 @@
+{
+  "name": "relatime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Core formatting logic for the relatime GNOME Shell extension. Tests run under Node, runtime under GJS.",
+  "scripts": {
+    "test": "node --test 'test/*.test.js'"
+  }
+}
