@@ -42,6 +42,18 @@
 /* The minutes chip takes its background from the ramp in src/relatime.js,
  * applied per tick via set_style(). White means exactly on the hour. */
 
+/* The exact figure beside the coarse one: small and white, so it reads as a
+ * refinement of the big number rather than a second value. It must come after
+ * .relatime-part, which sets black text at equal specificity. */
+.relatime-exact {
+    color: #ffffff;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0 0 0 2px;
+    font-size: 0.62em;
+    font-weight: 700;
+}
+
 .relatime-tooltip {
     background-color: rgba(0, 0, 0, 0.85);
     color: #ffffff;

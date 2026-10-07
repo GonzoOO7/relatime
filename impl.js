@@ -30,11 +30,12 @@ deps => {
 
         return eval(`(() => {
             ${source}
-            return {parts, format, formatMarkup, formatExact, parse, isNightHour, offsetColor};
+            return {parts, format, formatMarkup, formatExact, parse, isNightHour,
+                    offsetColor, roundOffset};
         })()`);
     }
 
-    const {parts, formatExact, isNightHour, offsetColor} = loadCore();
+    const {parts, formatExact, isNightHour, offsetColor, roundOffset} = loadCore();
 
     // Colours live in stylesheet.css. Three separate labels instead of one
     // Pango-markup label: a `foreground` attribute on the first span of a
@@ -154,6 +155,8 @@ deps => {
             // which side of the hour we are on, so the ramp has to be legible
             // on its own (see RAMP_STOPS in src/relatime.js).
             const minutesLabel = part('relatime-minutes');
+            // The exact figure, in small white text beside the coarse one.
+            const exactLabel = part('relatime-exact');
 
             this._display = new St.BoxLayout({
                 style_class: 'relatime-display',
@@ -162,6 +165,7 @@ deps => {
             this._display.add_child(hourLabel);
             this._display.add_child(colonLabel);
             this._display.add_child(minutesLabel);
+            this._display.add_child(exactLabel);
             this.add_child(this._display);
 
             // Only touch the night class when it actually changes: re-adding it
@@ -169,27 +173,31 @@ deps => {
             this._nightApplied = null;
 
             this._setTime = now => {
-                const {hour, sign, minutes} = parts(now);
+                const {hour, sign, minutes, base24} = parts(now);
 
                 hourLabel.set_text(String(hour));
                 colonLabel.set_text(':');
 
-                // No leading zero: "5" reads better than "05" on the chip, and
-                // saves a few pixels. parts() still hands back the canonical
-                // padded form that format() and the tests use.
-                // Negatives keep their minus - the colour already says which
-                // side of the hour we are on, but the digit count does not.
-                const magnitude = String(Number(minutes));
-                minutesLabel.set_text(sign === '-' ? `-${magnitude}` : magnitude);
+                const signed = sign === '-' ? -Number(minutes) : Number(minutes);
+
+                // The big figure snaps to whole fives; the exact one rides
+                // beside it in small text. No leading zeros either way, and a
+                // minus only when the offset is negative.
+                const show = v => `${v < 0 ? '-' : ''}${Math.abs(v)}`;
+                const rounded = roundOffset(signed);
+                minutesLabel.set_text(show(rounded));
+                // Always shown, even when it agrees with the coarse figure.
+                exactLabel.set_text(show(signed));
 
                 // Banded ramp: white only when the offset is exactly zero.
-                const signed = sign === '-' ? -Number(minutes) : Number(minutes);
                 // St.Widget.set_style() takes ONE argument: a CSS declaration
                 // string. Passing (property, value) throws "Too many arguments"
                 // and silently applies nothing.
-                minutesLabel.set_style(`background-color: ${offsetColor(signed)};`);
+                minutesLabel.set_style(`background-color: ${offsetColor(rounded)};`);
 
-                const wantNight = isNightHour(now.getHours()) ? 'relatime-night' : null;
+                // The BASE hour, not the wall clock's: at 21:35 the big number
+                // already reads 10 (base hour 22), so it must already be blue.
+                const wantNight = isNightHour(base24) ? 'relatime-night' : null;
                 if (wantNight !== this._nightApplied) {
                     if (this._nightApplied)
                         hourLabel.remove_style_class_name(this._nightApplied);

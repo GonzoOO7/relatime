@@ -213,12 +213,14 @@ test('disable() puts the dateMenu role back where it was', () => {
     assert.deepEqual(deps.Main.sessionMode.panel.center, ['dateMenu']);
 });
 
-test('enable() renders hour, colon and minutes as three styled parts', () => {
+test('enable() renders hour, colon, coarse and exact parts', () => {
     const {deps, calls} = stubDeps();
     factory(deps).enable();
 
     const labels = calls.filter(c => c[0] === 'label').map(c => c.slice(1));
-    assert.equal(labels.length, 3, `expected 3 parts, got ${JSON.stringify(labels)}`);
+    assert.equal(labels.length, 4, `expected 4 parts, got ${JSON.stringify(labels)}`);
+    assert.ok(labels.some(([cls]) => cls.endsWith('relatime-exact')),
+        'the exact figure has its own part');
     for (const [cls, text] of labels)
         assert.ok(cls.includes('relatime-') && text !== undefined && !String(text).includes('undefined'),
             `label ${cls} has bad text ${text}`);
@@ -237,12 +239,14 @@ test('enable() renders hour, colon and minutes as three styled parts', () => {
 });
 
 
-test('enable() renders hour, colon and minutes as three styled parts', () => {
+test('enable() renders hour, colon, coarse and exact parts', () => {
     const {deps, calls} = stubDeps();
     factory(deps).enable();
 
     const labels = calls.filter(c => c[0] === 'label').map(c => c.slice(1));
-    assert.equal(labels.length, 3, `expected 3 parts, got ${JSON.stringify(labels)}`);
+    assert.equal(labels.length, 4, `expected 4 parts, got ${JSON.stringify(labels)}`);
+    assert.ok(labels.some(([cls]) => cls.endsWith('relatime-exact')),
+        'the exact figure has its own part');
     for (const [cls, text] of labels)
         assert.ok(cls.includes('relatime-') && text !== undefined && !String(text).includes('undefined'),
             `label ${cls} has bad text ${text}`);
@@ -308,6 +312,8 @@ test('the hour turns blue at night and yellow again in the morning', () => {
     const droppedNight = () => mods().some(c => c[0] === 'remove_class' && c[1] === 'relatime-night');
 
     at(21);  assert.equal(addedNight(), false, '21:10 is still day');
+    at(21, 35); assert.ok(addedNight(), '21:35 reads 10:-25, base hour 22 -> blue');
+    at(21, 29); assert.ok(droppedNight(), '21:29 reads 9:-29, base hour 21 -> yellow again');
     at(22);  assert.ok(addedNight(), '22:00 turns the hour blue');
     at(23);  assert.equal(mods().length, 0, '23:10 stays blue, no churn');
     at(0);   assert.equal(mods().length, 0, '00:10 is still blue, no churn');
@@ -367,30 +373,45 @@ test('the minutes colour comes from the banded ramp, not the sign', () => {
     assert.equal(colour(), offsetColor(+20), 'past is green-ish');
 });
 
-test('minutes render without a leading zero, minus only when negative', () => {
+test('the coarse figure is always a multiple of five', () => {
     const {deps, calls, button} = stubDeps();
     factory(deps).enable();
     const label = button();
 
-    const rendered = [];
-    for (let m = 0; m < 60; m++) {
+    const coarse = m => {
         calls.length = 0;
         label.refresh(new Date(2024, 0, 1, 12, m));
-        rendered.push(String(calls
-            .find(c => c[0] === 'label' && c[1].includes('relatime-minutes'))?.[2]));
-    }
+        return String(calls
+            .find(c => c[0] === 'label' && c[1].includes('relatime-part relatime-minutes'))?.[2]);
+    };
 
     for (let m = 0; m < 60; m++) {
-        // Minutes 30-59 count back to the next hour and carry a minus; the
-        // sign is there because the digit count alone does not show direction.
-        const expected = m < 30 ? String(m) : `-${60 - m}`;
-        assert.equal(rendered[m], expected,
-            `minute ${m} should render as ${expected}, got ${rendered[m]}`);
-        assert.doesNotMatch(rendered[m], /^-?0\d/, `leading zero: ${rendered[m]}`);
+        const shown = coarse(m);
+        const digits = shown.replace('-', '');
+        assert.ok(Number(digits) % 5 === 0, `minute ${m}: "${shown}" is not a multiple of 5`);
+        assert.doesNotMatch(shown, /^-?0\d/, `leading zero: ${shown}`);
+        assert.ok(!shown.startsWith('+'), `a plus sign must never be drawn: ${shown}`);
     }
+});
 
-    assert.equal(rendered.filter(t => t.startsWith('-')).length, 30);
-    assert.ok(!rendered.some(t => t === '+0'), 'a plus sign must never be drawn');
+test('the exact figure carries the true offset, and is always shown', () => {
+    const {deps, calls, button} = stubDeps();
+    factory(deps).enable();
+    const label = button();
+
+    const exactAt = (m) => {
+        calls.length = 0;
+        label.refresh(new Date(2024, 0, 1, 12, m));
+        const call = calls.find(c => c[0] === 'label' && c[1].includes('relatime-exact'));
+        return call ? String(call[2]) : null;
+    };
+
+    // 12:26 is 26 past the hour: coarse 25, exact 26.
+    assert.equal(exactAt(26), '26');
+    // 12:25 lands on a multiple of five, but the exact figure is shown anyway.
+    assert.equal(exactAt(25), '25');
+    // 12:54 counts back to the next hour, so it is -6 and keeps its minus.
+    assert.equal(exactAt(54), '-6');
 });
 
 
@@ -433,6 +454,8 @@ test('the hour turns blue at night and yellow again in the morning', () => {
     const droppedNight = () => mods().some(c => c[0] === 'remove_class' && c[1] === 'relatime-night');
 
     at(21);  assert.equal(addedNight(), false, '21:10 is still day');
+    at(21, 35); assert.ok(addedNight(), '21:35 reads 10:-25, base hour 22 -> blue');
+    at(21, 29); assert.ok(droppedNight(), '21:29 reads 9:-29, base hour 21 -> yellow again');
     at(22);  assert.ok(addedNight(), '22:00 turns the hour blue');
     at(23);  assert.equal(mods().length, 0, '23:10 stays blue, no churn');
     at(0);   assert.equal(mods().length, 0, '00:10 is still blue, no churn');
@@ -492,30 +515,45 @@ test('the minutes colour comes from the banded ramp, not the sign', () => {
     assert.equal(colour(), offsetColor(+20), 'past is green-ish');
 });
 
-test('minutes render without a leading zero, minus only when negative', () => {
+test('the coarse figure is always a multiple of five', () => {
     const {deps, calls, button} = stubDeps();
     factory(deps).enable();
     const label = button();
 
-    const rendered = [];
-    for (let m = 0; m < 60; m++) {
+    const coarse = m => {
         calls.length = 0;
         label.refresh(new Date(2024, 0, 1, 12, m));
-        rendered.push(String(calls
-            .find(c => c[0] === 'label' && c[1].includes('relatime-minutes'))?.[2]));
-    }
+        return String(calls
+            .find(c => c[0] === 'label' && c[1].includes('relatime-part relatime-minutes'))?.[2]);
+    };
 
     for (let m = 0; m < 60; m++) {
-        // Minutes 30-59 count back to the next hour and carry a minus; the
-        // sign is there because the digit count alone does not show direction.
-        const expected = m < 30 ? String(m) : `-${60 - m}`;
-        assert.equal(rendered[m], expected,
-            `minute ${m} should render as ${expected}, got ${rendered[m]}`);
-        assert.doesNotMatch(rendered[m], /^-?0\d/, `leading zero: ${rendered[m]}`);
+        const shown = coarse(m);
+        const digits = shown.replace('-', '');
+        assert.ok(Number(digits) % 5 === 0, `minute ${m}: "${shown}" is not a multiple of 5`);
+        assert.doesNotMatch(shown, /^-?0\d/, `leading zero: ${shown}`);
+        assert.ok(!shown.startsWith('+'), `a plus sign must never be drawn: ${shown}`);
     }
+});
 
-    assert.equal(rendered.filter(t => t.startsWith('-')).length, 30);
-    assert.ok(!rendered.some(t => t === '+0'), 'a plus sign must never be drawn');
+test('the exact figure carries the true offset, and is always shown', () => {
+    const {deps, calls, button} = stubDeps();
+    factory(deps).enable();
+    const label = button();
+
+    const exactAt = (m) => {
+        calls.length = 0;
+        label.refresh(new Date(2024, 0, 1, 12, m));
+        const call = calls.find(c => c[0] === 'label' && c[1].includes('relatime-exact'));
+        return call ? String(call[2]) : null;
+    };
+
+    // 12:26 is 26 past the hour: coarse 25, exact 26.
+    assert.equal(exactAt(26), '26');
+    // 12:25 lands on a multiple of five, but the exact figure is shown anyway.
+    assert.equal(exactAt(25), '25');
+    // 12:54 counts back to the next hour, so it is -6 and keeps its minus.
+    assert.equal(exactAt(54), '-6');
 });
 
 

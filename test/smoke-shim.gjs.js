@@ -183,8 +183,8 @@ if (!enableThrew) {
     check(calls.some(c => c[0] === 'timeout_add'),
         'enable() armed the minute timer, so the clock keeps ticking');
     const labels = calls.filter(c => c[0] === 'label').map(c => c.slice(1));
-    check(labels.length === 3,
-        `three styled parts rendered (got ${JSON.stringify(labels)})`);
+    check(labels.length === 4,
+        `hour, colon, coarse and exact parts rendered (got ${JSON.stringify(labels)})`);
     check(!labels.some(([, t]) => String(t).includes('+')),
         `a plus sign is never drawn: ${JSON.stringify(labels)}`);
     // St.Widget.set_style takes ONE argument (a CSS declaration string); the

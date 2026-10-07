@@ -3,7 +3,7 @@
 // Relative-hour notation: the minute hand is expressed against the NEAREST
 // hour, with the :30 boundary resolving to the LATER hour.
 //   07:59 -> 8:-01      08:20 -> 8:+20
-//   08:30 -> 9:-30      01:30 -> 12:-30
+//   08:30 -> 9:-30      01:30 -> 02:-30
 // So each base hour covers the range H:-30 .. H:29.
 //
 // No GNOME imports on purpose: this file must run under GJS, Node and any
@@ -49,6 +49,23 @@ export function format(date) {
 /** Ordinary 24h time, for the tooltip. e.g. "08:50" */
 export function formatExact(date) {
     return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+/** The big number snaps to multiples of this many minutes. */
+export const DISPLAY_STEP_MINUTES = 5;
+
+/**
+ * Round a signed offset to the nearest DISPLAY_STEP_MINUTES, ties away from
+ * zero: -30,-29,-28 -> -30, -27..-23 -> -25, -22..-18 -> -20, and so on.
+ *
+ * This is the coarse figure; the exact one is shown beside it in small text.
+ *
+ * @param {number} offset signed minutes from the base hour, -30..30
+ */
+export function roundOffset(offset) {
+    const clamped = Math.max(-RAMP_MINUTES, Math.min(RAMP_MINUTES, offset));
+    const magnitude = Math.round(Math.abs(clamped) / DISPLAY_STEP_MINUTES);
+    return (clamped < 0 ? -1 : 1) * magnitude * DISPLAY_STEP_MINUTES;
 }
 
 /** Start of the night band, in 24h hours. */
