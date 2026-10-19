@@ -1,6 +1,6 @@
 # relatime — reference notes
 
-Everything here was verified on this machine, not recalled. Where a fact came
+Everything here was verified against real bindings, not recalled. Where a fact came
 from a surprising place, that is noted — several contradict what older
 GNOME extension tutorials say.
 
@@ -11,8 +11,6 @@ GNOME extension tutorials say.
 | GNOME Shell | 50.5, Wayland session |
 | gjs | 1.88.1 (`gjs -m` for modules, `gjs -m file.js` to run) |
 | Node | 24.21.0 — `node --test` built in, no dependencies needed |
-| cargo / rustc | 1.99 present |
-| missing | `valac`, `meson`, `tsc`, `esbuild`, `g-ir-inspect` |
 | user extensions | `~/.local/share/gnome-shell/extensions/<uuid>/` |
 | settings | `org.gnome.shell enabled-extensions` / `disabled-extensions` |
 
@@ -193,7 +191,7 @@ leaks per reload — harmless).
 | `gnome-shell --replace` | untested on Wayland; not needed |
 | `gnome-shell --nested` | gone from `--help` on 50; `--virtual-monitor` survives |
 
-This machine does **not** journal extension errors to the user journal, which
+This setup does **not** journal extension errors to the user journal, which
 is why `scripts/status.sh` prefers D-Bus and scopes the journal read to the
 current shell's start time.
 

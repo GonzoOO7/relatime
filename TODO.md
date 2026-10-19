@@ -72,7 +72,7 @@ It produced `AGENTS.md` (the rules that stop restarts) and the tests that run
 - [ ] README, so the "listed but not loaded" confusion is documented for humans
 
 ## Deferred: fullscreen-replacement polish
-- [ ] **Flicker on conversion** - undoing fullscreen snaps the window 1920x1080 -> 1920x1048,
+- [ ] **Flicker on conversion** - undoing fullscreen snaps the window down in size,
       a visible flash on every F11. Accepted for now, revisit later (pre-animation? convert
       before the surface is shown?).
 - [ ] **Debounce per window** - remember which windows were already converted and ignore their

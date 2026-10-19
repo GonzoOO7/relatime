@@ -101,7 +101,7 @@ function stubDeps() {
             SOURCE_REMOVE: false,
             Source: {remove: () => record('source_remove')},
             PRIORITY_DEFAULT: 0,
-            DateTime: {new_now_local: () => ({get_seconds: () => 30, get_minute: () => 10})},
+            DateTime: {new_now_local: () => ({get_seconds: () => 30, get_minute: () => 10, format: () => '00:10'})},
         },
         GObject: {
             registerClass: (meta, klass) => (registered.push(meta.GTypeName), klass),
