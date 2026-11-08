@@ -10,6 +10,16 @@ dont expect me to work on this... changes come and go when they want, no promise
 
 also; this does not represent my way of coding, its just some ai stuff i let build, dont think different of me as a hooman bigschilling
 
+## install
+
+needs GNOME Shell 50/51, `python3`, `rsync`, `curl` (or `wget`)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/GonzoOO7/relatime/main/install.sh | bash
+```
+
+or from a clone: `./install.sh`. then log out and back in once.
+
 ## if you see this
 
 and are not a firend of mine, take everything with a grain of sodiom cloride

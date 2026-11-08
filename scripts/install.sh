@@ -16,7 +16,7 @@ mkdir -p "$DEST"
 rsync -a --delete \
     --exclude 'node_modules' --exclude 'package.json' --exclude '.git' \
     --exclude 'scripts' --exclude 'TODO.md' --exclude 'test' \
-    --exclude 'REFERENCE.md' --exclude 'AGENTS.md' \
+    --exclude 'REFERENCE.md' --exclude 'AGENTS.md' --exclude '/install.sh' \
     --delete-excluded \
     "$SRC"/ "$DEST"/
 
